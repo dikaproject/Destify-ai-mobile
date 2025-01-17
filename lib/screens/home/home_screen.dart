@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:destify_mobile/widgets/custom_bottom_nav.dart';
 import 'package:destify_mobile/screens/explore/explore_screen.dart';
 import 'package:destify_mobile/screens/ai_chat/ai_chat_screen.dart';
-import 'package:destify_mobile/screens/about/about_screen.dart';
 import 'package:destify_mobile/screens/profile/profile_screen.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:destify_mobile/screens/scan/scan_result_screen.dart';
+import 'dart:io';  // Add this import
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -23,89 +25,121 @@ class _HomeScreenState extends State<HomeScreen> {
     const ProfileScreen(),
   ];
 
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> _handleImagePick(ImageSource source) async {
+    try {
+      final XFile? image = await _picker.pickImage(source: source);
+      if (image != null) {
+        // Close modal
+        Navigator.pop(context);
+        
+        // Show scanning result screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ScanResultScreen(
+              imageFile: File(image.path),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      // Handle error
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false, // Added to prevent resize
+      extendBody: true, // Added to extend body behind bottom nav
       body: IndexedStack(
         index: _currentIndex,
         children: _screens,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            backgroundColor: Colors.transparent,
-            builder: (context) => Container(
-              height: 180, // Reduced from 200
-              padding: const EdgeInsets.all(16), // Reduced from 20
-              decoration: BoxDecoration(
-                color: Theme.of(context).scaffoldBackgroundColor,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 40,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: 16), // Reduced from 20
+      floatingActionButton: MediaQuery.of(context).viewInsets.bottom > 0
+          ? null // Hide FAB when keyboard is visible
+          : FloatingActionButton(
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => Container(
+                    height: 170, // Reduced from 200
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16), // Adjusted padding
                     decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(2),
+                      color: Theme.of(context).scaffoldBackgroundColor,
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 4,
+                          margin: const EdgeInsets.only(bottom: 12), // Reduced from 16
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                        Text(
+                          'AI Image Scanner',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                        const SizedBox(height: 16), // Reduced from 20
+                        Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _buildScanOption(
+                                context,
+                                Icons.camera_alt,
+                                'Camera',
+                                () => _handleImagePick(ImageSource.camera),
+                              ),
+                              _buildScanOption(
+                                context,
+                                Icons.photo_library,
+                                'Gallery',
+                                () => _handleImagePick(ImageSource.gallery),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  Text(
-                    'AI Image Scanner',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  const SizedBox(height: 16), // Reduced from 20
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildScanOption(
-                        context,
-                        Icons.camera_alt,
-                        'Camera',
-                        () => {/* Handle camera */},
-                      ),
-                      _buildScanOption(
-                        context,
-                        Icons.photo_library,
-                        'Gallery',
-                        () => {/* Handle gallery */},
-                      ),
+                );
+              },
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).colorScheme.primary,
+                      Theme.of(context).colorScheme.secondary,
                     ],
                   ),
-                ],
+                ),
+                child: const Icon(
+                  Icons.document_scanner,
+                  color: Colors.white,
+                ),
               ),
             ),
-          );
-        },
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        child: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              colors: [
-                Theme.of(context).colorScheme.primary,
-                Theme.of(context).colorScheme.secondary,
-              ],
-            ),
-          ),
-          child: const Icon(
-            Icons.document_scanner,
-            color: Colors.white,
-          ),
-        ),
-      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: CustomBottomNav(
-        activeIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
-      ),
+      bottomNavigationBar: MediaQuery.of(context).viewInsets.bottom > 0
+          ? null // Hide bottom nav when keyboard is visible
+          : CustomBottomNav(
+              activeIndex: _currentIndex,
+              onTap: (index) => setState(() => _currentIndex = index),
+            ),
     );
   }
 
@@ -119,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: SizedBox(
-        width: 80,
+        width: 72, // Reduced from 80
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -135,12 +169,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 size: 28, // Reduced from 32
               ),
             ),
-            const SizedBox(height: 6), // Reduced from 8
+            const SizedBox(height: 4), // Reduced from 6
             Text(
               label,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w500,
-                    fontSize: 13,
+                    fontSize: 12, // Reduced from 13
                   ),
             ),
           ],
