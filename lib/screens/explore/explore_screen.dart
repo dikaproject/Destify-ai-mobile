@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:destify_mobile/utils/app_localizations.dart'; // Add this import
 
 class ExploreScreen extends StatelessWidget {
   const ExploreScreen({super.key});
@@ -17,7 +18,7 @@ class ExploreScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Explore',
+                    AppLocalizations.of(context).translate('explore'),
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -27,19 +28,21 @@ class ExploreScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
-                          blurRadius: 20,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+                      boxShadow: Theme.of(context).brightness == Brightness.dark
+                          ? []  // No shadow in dark mode
+                          : [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.08),
+                                blurRadius: 20,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                     ),
                     child: TextField(
                       decoration: InputDecoration(
-                        hintText: 'Search destinations...',
+                        hintText: AppLocalizations.of(context).translate('searchDestinations'),
                         hintStyle: TextStyle(
                           color: Colors.grey[400],
                           fontWeight: FontWeight.w500,
@@ -53,7 +56,7 @@ class ExploreScreen extends StatelessWidget {
                           borderSide: BorderSide.none,
                         ),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: Theme.of(context).colorScheme.surface,
                       ),
                     ),
                   ).animate()
@@ -70,9 +73,9 @@ class ExploreScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // Adjusted padding
                   child: Text(
-                    'Categories',
+                    AppLocalizations.of(context).translate('categories'),
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -81,16 +84,16 @@ class ExploreScreen extends StatelessWidget {
                   .fadeIn(delay: 400.ms)
                   .slideX(),
                 SizedBox(
-                  height: 100,
+                  height: 110, // Increased height from 100 to 110
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     children: [
-                      _buildCategory(context, 'Beach', Icons.beach_access, Colors.blue),
-                      _buildCategory(context, 'Mountain', Icons.landscape, Colors.green),
-                      _buildCategory(context, 'City', Icons.location_city, Colors.orange),
-                      _buildCategory(context, 'Cultural', Icons.museum, Colors.purple),
-                      _buildCategory(context, 'Adventure', Icons.hiking, Colors.red),
+                      _buildCategory(context, 'beach', Icons.beach_access, Colors.blue),
+                      _buildCategory(context, 'mountain', Icons.landscape, Colors.green),
+                      _buildCategory(context, 'city', Icons.location_city, Colors.orange),
+                      _buildCategory(context, 'cultural', Icons.museum, Colors.purple),
+                      _buildCategory(context, 'adventure', Icons.hiking, Colors.red),
                     ],
                   ),
                 ),
@@ -109,14 +112,14 @@ class ExploreScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Popular Destinations',
+                        AppLocalizations.of(context).translate('popularDestinations'),
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
                       ),
                       TextButton(
                         onPressed: () {},
-                        child: const Text('View All'),
+                        child: Text(AppLocalizations.of(context).translate('viewAll')),
                       ),
                     ],
                   ),
@@ -148,14 +151,14 @@ class ExploreScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Trending Now',
+                      AppLocalizations.of(context).translate('trendingNow'),
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                     ),
                     TextButton(
                       onPressed: () {},
-                      child: const Text('View All'),
+                      child: Text(AppLocalizations.of(context).translate('viewAll')),
                     ),
                   ],
                 ).animate()
@@ -190,24 +193,26 @@ class ExploreScreen extends StatelessWidget {
       onTap: () {},
       child: Container(
         width: 80,
-        margin: const EdgeInsets.only(right: 12),
+        margin: const EdgeInsets.only(right: 12, bottom: 8), // Added bottom margin
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(12), // Reduced padding from 16 to 12
               decoration: BoxDecoration(
                 color: color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(icon, color: color),
+              child: Icon(icon, color: color, size: 24), // Added explicit size
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6), // Reduced height from 8 to 6
             Text(
-              label,
+              AppLocalizations.of(context).translate(label),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w500,
+                    fontSize: 12, // Added explicit font size
                   ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -224,14 +229,17 @@ class ExploreScreen extends StatelessWidget {
       width: 220,
       margin: const EdgeInsets.only(right: 16),
       decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: Theme.of(context).brightness == Brightness.dark
+            ? []  // No shadow in dark mode
+            : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -248,7 +256,7 @@ class ExploreScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
             ),
             child: Column(
@@ -299,14 +307,17 @@ class ExploreScreen extends StatelessWidget {
   Widget _buildTrendingCard(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: Theme.of(context).brightness == Brightness.dark
+            ? []  // No shadow in dark mode
+            : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),

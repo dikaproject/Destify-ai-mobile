@@ -6,6 +6,7 @@ import 'package:destify_mobile/screens/profile/profile_screen.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:destify_mobile/screens/scan/scan_result_screen.dart';
+import 'package:destify_mobile/utils/app_localizations.dart'; // Add this import
 import 'dart:io';  // Add this import
 
 class HomeScreen extends StatefulWidget {
@@ -30,19 +31,21 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _handleImagePick(ImageSource source) async {
     try {
       final XFile? image = await _picker.pickImage(source: source);
-      if (image != null) {
+      if (image != null && mounted) { // Add mounted check
         // Close modal
         Navigator.pop(context);
         
         // Show scanning result screen
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ScanResultScreen(
-              imageFile: File(image.path),
+        if (mounted) { // Add another mounted check
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ScanResultScreen(
+                imageFile: File(image.path),
+              ),
             ),
-          ),
-        );
+          );
+        }
       }
     } catch (e) {
       // Handle error
@@ -284,7 +287,7 @@ class HomeContent extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'Jakarta, Indonesia',
+                        AppLocalizations.of(context).translate('locationDefault'),
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                               fontWeight: FontWeight.w500,
                             ),
@@ -295,7 +298,7 @@ class HomeContent extends StatelessWidget {
                     .slideX(),
                   const SizedBox(height: 16),
                   Text(
-                    'Discover Your\nDream Destination',
+                    AppLocalizations.of(context).translate('discoverDream'),
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                           height: 1.2,
@@ -309,11 +312,13 @@ class HomeContent extends StatelessWidget {
                   // Enhanced Search Bar
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.black.withOpacity(0.3)
+                              : Colors.black.withOpacity(0.1),
                           blurRadius: 20,
                           offset: const Offset(0, 4),
                         ),
@@ -321,7 +326,7 @@ class HomeContent extends StatelessWidget {
                     ),
                     child: TextField(
                       decoration: InputDecoration(
-                        hintText: 'Search destinations...',
+                        hintText: AppLocalizations.of(context).translate('searchDestinations'),
                         hintStyle: TextStyle(
                           color: Colors.grey[400],
                           fontWeight: FontWeight.w500,
@@ -347,7 +352,9 @@ class HomeContent extends StatelessWidget {
                           borderSide: BorderSide.none,
                         ),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: Theme.of(context).brightness == Brightness.dark
+                            ? Theme.of(context).colorScheme.surface
+                            : Colors.white,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                       ),
                     ),
@@ -367,7 +374,7 @@ class HomeContent extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Text(
-                    'Featured Destinations',
+                    AppLocalizations.of(context).translate('featuredDestinations'),
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -400,7 +407,7 @@ class HomeContent extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'What would you like to do?',
+                    AppLocalizations.of(context).translate('whatWouldYouLike'),
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -414,25 +421,25 @@ class HomeContent extends StatelessWidget {
                         _buildFeatureButton(
                           context,
                           Icons.auto_awesome,
-                          'AI\nTravel',
+                          AppLocalizations.of(context).translate('aiTravel'),
                           Theme.of(context).colorScheme.primary,
                         ),
                         _buildFeatureButton(
                           context,
                           Icons.camera_alt,
-                          'Scan\nPlace',
+                          AppLocalizations.of(context).translate('scanPlace'),
                           Colors.blue,
                         ),
                         _buildFeatureButton(
                           context,
                           Icons.map,
-                          'Smart\nRoute',
+                          AppLocalizations.of(context).translate('smartRoute'),
                           Colors.green,
                         ),
                         _buildFeatureButton(
                           context,
                           Icons.calendar_today,
-                          'Plan\nTrip',
+                          AppLocalizations.of(context).translate('planTrip'),
                           Colors.orange,
                         ),
                       ],
@@ -454,14 +461,14 @@ class HomeContent extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Special Offers',
+                        AppLocalizations.of(context).translate('specialOffers'),
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
                       ),
                       TextButton(
                         onPressed: () {},
-                        child: const Text('View All'),
+                        child: Text(AppLocalizations.of(context).translate('viewAll')),
                       ),
                     ],
                   ),
@@ -649,7 +656,9 @@ class DestinationCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.black.withOpacity(0.3)
+                : Colors.black.withOpacity(0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

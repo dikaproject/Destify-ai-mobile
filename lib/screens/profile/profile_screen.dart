@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:provider/provider.dart';
+import 'package:destify_mobile/providers/theme_provider.dart';
+import 'package:destify_mobile/providers/language_provider.dart';
+import 'package:destify_mobile/utils/app_localizations.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -33,24 +37,38 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   // Settings Header
                   Text(
-                    'Settings',
+                    AppLocalizations.of(context).translate('settings'),
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                   ).animate().fadeIn().slideX(),
                   const SizedBox(height: 24),
 
+                  // Appearance Settings
+                  _buildSettingsGroup(
+                    context,
+                    AppLocalizations.of(context).translate('appearance'),
+                    [
+                      _buildThemeToggle(context),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
+
                   // Language Settings
                   _buildSettingsGroup(
                     context,
-                    'Language',
+                    AppLocalizations.of(context).translate('language'),
                     [
-                      _buildSettingsTile(
-                        context,
-                        'App Language',
-                        'English',
-                        Icons.language,
-                        onTap: () {},
+                      Consumer<LanguageProvider>(
+                        builder: (context, languageProvider, child) {
+                          return ListTile(
+                            leading: const Icon(Icons.language),
+                            title: Text(AppLocalizations.of(context).translate('appLanguage')),
+                            subtitle: Text(languageProvider.getLanguageName()),
+                            onTap: () => _showLanguageSelector(context),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -124,7 +142,7 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Guest User',
+                      AppLocalizations.of(context).translate('guestUser'),
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -152,9 +170,9 @@ class ProfileScreen extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildStatItem(context, '12', 'Places\nVisited'),
-                      _buildStatItem(context, '5', 'Saved\nDestinations'),
-                      _buildStatItem(context, '3', 'Upcoming\nTrips'),
+                      _buildStatItem(context, '12', 'placesVisited'),
+                      _buildStatItem(context, '5', 'savedDestinations'),
+                      _buildStatItem(context, '3', 'upcomingTrips'),
                     ],
                   ).animate().fadeIn().slideY(),
                 ),
@@ -163,29 +181,29 @@ class ProfileScreen extends StatelessWidget {
                 _buildMenuItem(
                   context,
                   Icons.favorite,
-                  'Saved Places',
-                  'Your favorite destinations',
+                  AppLocalizations.of(context).translate('savedPlaces'),
+                  AppLocalizations.of(context).translate('favorites'),
                   color: Colors.red[400]!,
                 ),
                 _buildMenuItem(
                   context,
                   Icons.history,
-                  'Travel History',
-                  'Places you have visited',
+                  AppLocalizations.of(context).translate('travelHistory'),
+                  AppLocalizations.of(context).translate('placesYouVisited'),
                   color: Colors.blue[400]!,
                 ),
                 _buildMenuItem(
                   context,
                   Icons.wallet_travel,
-                  'Upcoming Trips',
-                  'Your planned adventures',
+                  AppLocalizations.of(context).translate('upcomingTripsTitle'),
+                  AppLocalizations.of(context).translate('plannedAdventures'),
                   color: Colors.green[400]!,
                 ),
                 _buildMenuItem(
                   context,
                   Icons.help_outline,
-                  'Help & Support',
-                  'Get assistance and FAQs',
+                  AppLocalizations.of(context).translate('helpSupport'),
+                  AppLocalizations.of(context).translate('getFaq'),
                   color: Colors.purple[400]!,
                 ),
               ],
@@ -214,7 +232,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            label,
+            AppLocalizations.of(context).translate(label),
             style: Theme.of(context).textTheme.bodySmall,
             textAlign: TextAlign.center,
           ),
@@ -264,7 +282,7 @@ class ProfileScreen extends StatelessWidget {
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
@@ -290,10 +308,61 @@ class ProfileScreen extends StatelessWidget {
   }) {
     return ListTile(
       leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
-      title: Text(title),
+      title: Text(AppLocalizations.of(context).translate(title.toLowerCase())),
       subtitle: Text(subtitle),
       trailing: onTap != null ? const Icon(Icons.chevron_right) : null,
       onTap: onTap,
+    );
+  }
+
+  Widget _buildThemeToggle(BuildContext context) {
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return SwitchListTile(
+          value: themeProvider.isDarkMode,
+          onChanged: (value) => themeProvider.toggleTheme(),
+          title: Text(AppLocalizations.of(context).translate('darkMode')),
+          subtitle: Text(
+            themeProvider.isDarkMode 
+              ? AppLocalizations.of(context).translate('switchToLight')
+              : AppLocalizations.of(context).translate('switchToDark'),
+          ),
+          secondary: Icon(
+            themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        );
+      },
+    );
+  }
+
+  void _showLanguageSelector(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: const Text('English'),
+                onTap: () {
+                  context.read<LanguageProvider>().setLocale(const Locale('en'));
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                title: const Text('Bahasa Indonesia'),
+                onTap: () {
+                  context.read<LanguageProvider>().setLocale(const Locale('id'));
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:destify_mobile/screens/home/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:destify_mobile/utils/app_localizations.dart'; // Add this import
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -14,32 +15,37 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final controller = PageController();
   bool isLastPage = false;
 
-  final List<OnboardingPage> pages = [
-    OnboardingPage(
-      title: 'Discover Amazing Places',
-      description: 'Find the perfect destination for your next adventure',
-      imagePath: 'assets/images/onboarding/explore.jpg',
-      backgroundColor: const Color(0xFFE3F2FD),
-      iconColor: const Color(0xFF2196F3),
-    ),
-    OnboardingPage(
-      title: 'AI-Powered Travel Guide',
-      description: 'Get personalized recommendations based on your preferences',
-      imagePath: 'assets/images/onboarding/ai.png',
-      backgroundColor: const Color(0xFFE8EAF6),
-      iconColor: const Color(0xFF3F51B5),
-    ),
-    OnboardingPage(
-      title: 'Plan Your Journey',
-      description: 'Create the perfect itinerary with our AI assistant',
-      imagePath: 'assets/images/onboarding/plan.jpeg',
-      backgroundColor: const Color(0xFFE1F5FE),
-      iconColor: const Color(0xFF03A9F4),
-    ),
-  ];
+  List<OnboardingPage> _getPages(BuildContext context) {
+    return [
+      OnboardingPage(
+        title: AppLocalizations.of(context).translate('onboarding-page1-title'),
+        description: AppLocalizations.of(context).translate('onboarding-page1-description'),
+        imagePath: 'assets/images/onboarding/explore.jpg',
+        backgroundColor: const Color(0xFFE3F2FD),
+        iconColor: const Color(0xFF2196F3),
+      ),
+      OnboardingPage(
+        title: AppLocalizations.of(context).translate('onboarding-page2-title'),
+        description: AppLocalizations.of(context).translate('onboarding-page2-description'),
+        imagePath: 'assets/images/onboarding/ai.png',
+        backgroundColor: const Color(0xFFE8EAF6),
+        iconColor: const Color(0xFF3F51B5),
+      ),
+      OnboardingPage(
+        title: AppLocalizations.of(context).translate('onboarding-page3-title'),
+        description: AppLocalizations.of(context).translate('onboarding-page3-description'),
+        imagePath: 'assets/images/onboarding/plan.jpeg',
+        backgroundColor: const Color(0xFFE1F5FE),
+        iconColor: const Color(0xFF03A9F4),
+      ),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final pages = _getPages(context);
+    
     return Scaffold(
       body: Stack(
         children: [
@@ -52,28 +58,45 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             itemBuilder: (context, index) {
               final page = pages[index];
               return Container(
-                color: page.backgroundColor,
+                color: isDarkMode 
+                    ? Theme.of(context).colorScheme.surface 
+                    : page.backgroundColor,
                 child: SafeArea(
                   child: Column(
                     children: [
                       Expanded(
                         flex: 3,
-                        child: Image.asset(
-                          page.imagePath,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        )
-                          .animate(delay: 300.ms)
-                          .fadeIn()
-                          .scale(),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: isDarkMode 
+                                ? Theme.of(context).colorScheme.surface
+                                : null,
+                          ),
+                          child: Image.asset(
+                            page.imagePath,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                          ).animate(delay: 300.ms)
+                            .fadeIn()
+                            .scale(),
+                        ),
                       ),
                       Container(
                         padding: const EdgeInsets.all(24),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.vertical(
+                        decoration: BoxDecoration(
+                          color: isDarkMode 
+                              ? Theme.of(context).colorScheme.surface
+                              : Colors.white,
+                          borderRadius: const BorderRadius.vertical(
                             top: Radius.circular(32),
                           ),
+                          boxShadow: isDarkMode ? [] : [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, -5),
+                            ),
+                          ],
                         ),
                         child: Column(
                           children: [
@@ -81,21 +104,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               page.title,
                               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                                 fontWeight: FontWeight.bold,
+                                color: isDarkMode 
+                                    ? Theme.of(context).colorScheme.onSurface
+                                    : Colors.black87,
                               ),
                               textAlign: TextAlign.center,
-                            )
-                              .animate(delay: 500.ms)
+                            ).animate(delay: 500.ms)
                               .fadeIn()
                               .slideY(begin: 0.2),
                             const SizedBox(height: 16),
                             Text(
                               page.description,
                               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                color: Colors.grey[600],
+                                color: isDarkMode 
+                                    ? Theme.of(context).colorScheme.onSurface.withOpacity(0.7)
+                                    : Colors.grey[600],
                               ),
                               textAlign: TextAlign.center,
-                            )
-                              .animate(delay: 700.ms)
+                            ).animate(delay: 700.ms)
                               .fadeIn()
                               .slideY(begin: 0.2),
                             const SizedBox(height: 32),
@@ -105,15 +131,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 TextButton(
                                   onPressed: () => controller.jumpToPage(pages.length - 1),
                                   child: Text(
-                                    'SKIP',
-                                    style: TextStyle(color: Theme.of(context).colorScheme.primary),
+                                    AppLocalizations.of(context).translate('onboarding-skip'),
+                                    style: TextStyle(
+                                      color: Theme.of(context).colorScheme.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                                 SmoothPageIndicator(
                                   controller: controller,
                                   count: pages.length,
                                   effect: ExpandingDotsEffect(
-                                    dotColor: Colors.grey[300]!,
+                                    dotColor: isDarkMode 
+                                        ? Colors.grey[700]!
+                                        : Colors.grey[300]!,
                                     activeDotColor: Theme.of(context).colorScheme.primary,
                                     dotHeight: 8,
                                     dotWidth: 8,
@@ -135,8 +166,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     }
                                   },
                                   child: Text(
-                                    isLastPage ? 'START' : 'NEXT',
-                                    style: TextStyle(color: Theme.of(context).colorScheme.primary),
+                                    isLastPage 
+                                        ? AppLocalizations.of(context).translate('onboarding-start')
+                                        : AppLocalizations.of(context).translate('onboarding-next'),
+                                    style: TextStyle(
+                                      color: Theme.of(context).colorScheme.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -154,6 +190,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ),
     );
   }
+
 }
 
 class OnboardingPage {

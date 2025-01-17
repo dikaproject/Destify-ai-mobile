@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:destify_mobile/utils/app_localizations.dart'; // Add this import
 import 'dart:io';
 
 class AIChatScreen extends StatefulWidget { // Changed to StatefulWidget
@@ -27,9 +28,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
     setState(() {
       _messages.insert(0, ChatMessage(message: text, isAI: false));
       _messages.insert(0, ChatMessage(
-        message: "Fitur dalam tahap pengembangan versi 1.0 Destify AI. "
-            "harap menunggu developer menyelesaikan. "
-            "Project Develop by Rasya Dika Pratama - SMK Telkom Purwokerto",
+        message: AppLocalizations.of(context).translate('featureInDevelopment'),
         isAI: true,
       ));
     });
@@ -42,14 +41,12 @@ class _AIChatScreenState extends State<AIChatScreen> {
       if (image != null) {
         setState(() {
           _messages.insert(0, ChatMessage(
-            message: "🖼️ Image uploaded: ${image.path.split('/').last}",
+            message: '🖼️ ${AppLocalizations.of(context).translate('imageUploaded')}: ${image.path.split('/').last}', // Fixed string interpolation
             isAI: false,
             image: File(image.path),
           ));
           _messages.insert(0, ChatMessage(
-            message: "Fitur dalam tahap pengembangan versi 1.0 Destify AI. "
-                "harap menunggu developer menyelesaikan. "
-                "Project Develop by Rasya Dika Pratama - SMK Telkom Purwokerto",
+            message: AppLocalizations.of(context).translate('featureInDevelopment'),
             isAI: true,
           ));
         });
@@ -69,7 +66,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.camera_alt),
-              title: const Text('Take a photo'),
+              title: Text(AppLocalizations.of(context).translate('takePhoto')),
               onTap: () {
                 Navigator.pop(context);
                 _handleImageUpload(ImageSource.camera);
@@ -77,7 +74,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.photo_library),
-              title: const Text('Choose from gallery'),
+              title: Text(AppLocalizations.of(context).translate('chooseGallery')),
               onTap: () {
                 Navigator.pop(context);
                 _handleImageUpload(ImageSource.gallery);
@@ -130,13 +127,13 @@ class _AIChatScreenState extends State<AIChatScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Destify AI Assistant',
+                              AppLocalizations.of(context).translate('aiAssistant'),
                               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.bold,
                                   ),
                             ),
                             Text(
-                              'Online • Ready to help',
+                              AppLocalizations.of(context).translate('online'),
                               style: TextStyle(
                                 color: Colors.green[600],
                                 fontSize: 12,
@@ -164,7 +161,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Try asking about destinations, activities, or travel tips!',
+                            AppLocalizations.of(context).translate('travelTip'),
                             style: TextStyle(
                               color: Theme.of(context).colorScheme.primary,
                               fontSize: 13,
@@ -190,13 +187,8 @@ class _AIChatScreenState extends State<AIChatScreen> {
                     return Column(
                       children: [
                         const SizedBox(height: 8),
-                        const ChatBubble(
-                          message: "👋 Hi! I'm your AI travel assistant. I can help you:\n\n"
-                              "• Find destinations based on your preferences\n"
-                              "• Create travel itineraries\n"
-                              "• Suggest local activities and attractions\n"
-                              "• Provide travel tips and information\n\n"
-                              "What would you like to explore today?",
+                        ChatBubble(
+                          message: AppLocalizations.of(context).translate('welcomeMessage'),
                           isAI: true,
                         ),
                         const SizedBox(height: 16),
@@ -231,7 +223,9 @@ class _AIChatScreenState extends State<AIChatScreen> {
                 color: Theme.of(context).scaffoldBackgroundColor,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.black.withOpacity(0.2)
+                        : Colors.black.withOpacity(0.05),
                     offset: const Offset(0, -4),
                     blurRadius: 8,
                   ),
@@ -244,8 +238,16 @@ class _AIChatScreenState extends State<AIChatScreen> {
                     child: Container(
                       constraints: const BoxConstraints(maxHeight: 100),
                       decoration: BoxDecoration(
-                        color: Colors.grey[100],
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Theme.of(context).colorScheme.surface.withOpacity(0.6)
+                            : Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.grey[800]!
+                              : Colors.transparent,
+                          width: 1,
+                        ),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.end,
@@ -253,7 +255,9 @@ class _AIChatScreenState extends State<AIChatScreen> {
                           IconButton(
                             icon: Icon(
                               Icons.mood,
-                              color: Colors.grey[600],
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
                             ),
                             onPressed: () {
                               // This will directly show system emoji keyboard
@@ -270,12 +274,21 @@ class _AIChatScreenState extends State<AIChatScreen> {
                               controller: _textController,
                               minLines: 1,
                               maxLines: 4,
+                              style: TextStyle(
+                                color: Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.grey[200]
+                                    : Colors.grey[800],
+                              ),
                               keyboardType: TextInputType.multiline, // Added this
                               textCapitalization: TextCapitalization.sentences, // Added this
                               enableSuggestions: true,
                               decoration: InputDecoration(
-                                hintText: 'Ask me anything about travel...',
-                                hintStyle: TextStyle(color: Colors.grey[400]),
+                                hintText: AppLocalizations.of(context).translate('askTravel'),
+                                hintStyle: TextStyle(
+                                  color: Theme.of(context).brightness == Brightness.dark
+                                      ? Colors.grey[500]
+                                      : Colors.grey[400],
+                                ),
                                 border: InputBorder.none,
                                 contentPadding: const EdgeInsets.fromLTRB(0, 12, 0, 12),
                               ),
@@ -285,7 +298,9 @@ class _AIChatScreenState extends State<AIChatScreen> {
                           IconButton(
                             icon: Icon(
                               Icons.image,
-                              color: Colors.grey[600],
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
                             ),
                             onPressed: _showImageOptions,
                           ),
@@ -377,7 +392,9 @@ class ChatBubble extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: isAI
-                ? Colors.grey[100]
+                ? Theme.of(context).brightness == Brightness.dark
+                    ? Theme.of(context).colorScheme.surface
+                    : Colors.grey[100]
                 : Theme.of(context).colorScheme.primary.withOpacity(0.1),
             borderRadius: BorderRadius.circular(16),
           ),
@@ -400,7 +417,11 @@ class ChatBubble extends StatelessWidget {
               Text(
                 message,
                 style: TextStyle(
-                  color: isAI ? Colors.black87 : Theme.of(context).colorScheme.primary,
+                  color: isAI
+                      ? Theme.of(context).brightness == Brightness.dark
+                          ? Theme.of(context).colorScheme.onSurface
+                          : Colors.black87
+                      : Theme.of(context).colorScheme.primary,
                   height: 1.5,
                 ),
               ),
