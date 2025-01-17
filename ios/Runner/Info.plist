@@ -49,5 +49,11 @@
 	<string>Need camera access to take pictures</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Need photo library access to select pictures</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs access to location to show nearby attractions.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>This app needs access to location to show nearby attractions.</string>
+	<key>io.flutter.embedded_views_preview</key>
+	<true/>
 </dict>
 </plist>

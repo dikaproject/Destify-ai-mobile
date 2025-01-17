@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:destify_mobile/providers/theme_provider.dart';
 import 'package:destify_mobile/providers/language_provider.dart';
 import 'package:destify_mobile/utils/app_localizations.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -85,20 +87,21 @@ class ProfileScreen extends StatelessWidget {
                         'Version',
                         '1.0.0',
                         Icons.info_outline,
+                        onTap: () => _showVersionInfo(context),
                       ),
                       _buildSettingsTile(
                         context,
                         'Developer',
                         'Rasya Dika Pratama',
                         Icons.code,
-                        onTap: () {},
+                        onTap: () => _showDeveloperSocials(context),
                       ),
                       _buildSettingsTile(
                         context,
                         'School',
                         'SMK Telkom Purwokerto',
                         Icons.school,
-                        onTap: () {},
+                        onTap: () => _redirectToSchoolWebsite(context),
                       ),
                     ],
                   ),
@@ -292,7 +295,10 @@ class ProfileScreen extends StatelessWidget {
             ],
           ),
           child: Column(
-            children: children,
+            children: children.map((child) => Material(
+              color: Colors.transparent,
+              child: child,
+            )).toList(),
           ),
         ),
       ],
@@ -364,5 +370,125 @@ class ProfileScreen extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _showDeveloperSocials(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocalizations.of(context).translate('developerSocials')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const FaIcon(FontAwesomeIcons.whatsapp, color: Color(0xFF25D366)),
+              title: const Text('WhatsApp'),
+              onTap: () => _launchUrl('https://wa.me/6282137068694'),
+            ),
+            ListTile(
+              leading: const FaIcon(FontAwesomeIcons.instagram, color: Color(0xFFE4405F)),
+              title: const Text('Instagram'),
+              onTap: () => _launchUrl('https://instagram.com/rasyadikapratama'),
+            ),
+            ListTile(
+              leading: const FaIcon(FontAwesomeIcons.linkedin, color: Color(0xFF0A66C2)),
+              title: const Text('LinkedIn'),
+              onTap: () => _launchUrl('https://linkedin.com/in/rasyadika'),
+            ),
+            ListTile(
+              leading: const FaIcon(FontAwesomeIcons.github, color: Colors.black),
+              title: const Text('GitHub'),
+              onTap: () => _launchUrl('https://github.com/rasyadpras'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(AppLocalizations.of(context).translate('close')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showVersionInfo(BuildContext context) {
+    // Get SafeArea padding
+    final safePadding = MediaQuery.of(context).padding.top;
+    
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context).translate('versionInfo'),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13,
+              color: Theme.of(context).colorScheme.onPrimary,
+            ),
+          ),
+          duration: const Duration(seconds: 4),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.95),
+          margin: EdgeInsets.only(
+            bottom: MediaQuery.of(context).size.height - 200, // Position from top
+            top: safePadding + kToolbarHeight + 10, // Account for status bar and app bar
+            left: 16,
+            right: 16,
+          ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 8,
+          dismissDirection: DismissDirection.horizontal,
+          action: SnackBarAction(
+            label: AppLocalizations.of(context).translate('close'),
+            textColor: Theme.of(context).colorScheme.onPrimary,
+            onPressed: () {
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            },
+          ),
+        ),
+      );
+  }
+
+  Future<void> _redirectToSchoolWebsite(BuildContext context) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            Text(AppLocalizations.of(context).translate('redirecting')),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(AppLocalizations.of(context).translate('cancel')),
+          ),
+        ],
+      ),
+    );
+
+    await Future.delayed(const Duration(seconds: 2));
+    if (context.mounted) {
+      Navigator.pop(context); // Close loading dialog
+      _launchUrl('https://smktelkom-pwt.sch.id');
+    }
+  }
+
+  Future<void> _launchUrl(String url) async {
+    if (await canLaunch(url)) {
+      await launch(url);
+    }
   }
 }

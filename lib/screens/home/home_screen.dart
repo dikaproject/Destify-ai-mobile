@@ -8,6 +8,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:destify_mobile/screens/scan/scan_result_screen.dart';
 import 'package:destify_mobile/utils/app_localizations.dart'; // Add this import
 import 'dart:io';  // Add this import
+import 'package:destify_mobile/screens/trip_planner/trip_planner_screen.dart';
+import 'package:destify_mobile/screens/destination/destination_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -190,18 +192,196 @@ class _HomeScreenState extends State<HomeScreen> {
 class HomeContent extends StatelessWidget {
   const HomeContent({super.key});
 
+  void _showNotificationsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Row(
+          children: [
+            Icon(
+              Icons.notifications,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              AppLocalizations.of(context).translate('notifications'),
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildNotificationItem(
+              context,
+              'Selamat Datang di Destify AI! 🎉',
+              'Jelajahi fitur-fitur menarik kami untuk merencanakan perjalanan Anda.',
+              DateTime.now().subtract(const Duration(minutes: 5)),
+              isNew: true,
+            ),
+            const Divider(),
+            _buildNotificationItem(
+              context,
+              'Fitur Baru Segera Hadir! 🚀',
+              'Nantikan pembaruan aplikasi dengan fitur-fitur baru yang menarik.',
+              DateTime.now().subtract(const Duration(hours: 2)),
+              isNew: true,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              AppLocalizations.of(context).translate('featureInDevelopment'),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.grey,
+                    fontStyle: FontStyle.italic,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(AppLocalizations.of(context).translate('close')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNotificationItem(
+    BuildContext context,
+    String title,
+    String message,
+    DateTime time,
+    {bool isNew = false}
+  ) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.notifications_outlined,
+              color: Theme.of(context).colorScheme.primary,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    if (isNew)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          'New',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  message,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _getTimeAgo(time),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.grey,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getTimeAgo(DateTime time) {
+    final now = DateTime.now();
+    final difference = now.difference(time);
+
+    if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}m ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}h ago';
+    } else {
+      return '${difference.inDays}d ago';
+    }
+  }
+
+  Future<void> _handleImagePick(BuildContext context, ImageSource source) async {
+    final ImagePicker picker = ImagePicker();
+    try {
+      final XFile? image = await picker.pickImage(source: source);
+      if (image != null && context.mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ScanResultScreen(
+              imageFile: File(image.path),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error picking image: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: CustomScrollView(
         slivers: [
-          // Enhanced Modern App Bar
+          // Updated Modern App Bar with Title
           SliverAppBar(
             floating: true,
             expandedHeight: 60,
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             elevation: 0,
             flexibleSpace: FlexibleSpaceBar(
+              titlePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              title: Text(
+                'Destify AI',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
               background: Container(
                 decoration: BoxDecoration(
                   color: Theme.of(context).scaffoldBackgroundColor,
@@ -252,12 +432,11 @@ class HomeContent extends StatelessWidget {
                       ),
                     ],
                   ),
-                  onPressed: () {},
+                  onPressed: () => _showNotificationsDialog(context),
                 ),
               ),
             ],
           ),
-
           // Enhanced Hero Section
           SliverToBoxAdapter(
             child: Container(
@@ -585,7 +764,43 @@ class HomeContent extends StatelessWidget {
   Widget _buildFeatureButton(BuildContext context, IconData icon, String label, Color color) {
     return Expanded(
       child: GestureDetector(
-        onTap: () {},
+        onTap: () {
+          switch (label) {
+            case 'AI\nPerjalanan':
+            case 'AI\nTravel':
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AIChatScreen()),
+              );
+              break;
+            case 'Pindai\nTempat':
+            case 'Scan\nPlace':
+              _handleImagePick(context, ImageSource.camera); // Fix missing parenthesis
+              break;
+            case 'Rute\nPintar':
+            case 'Smart\nRoute':
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text(AppLocalizations.of(context).translate('featureInDevelopment')),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(AppLocalizations.of(context).translate('close')),
+                    ),
+                  ],
+                ),
+              );
+              break;
+            case 'Rencana\nPerjalanan':
+            case 'Plan\nTrip':
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const TripPlannerScreen()),
+              );
+              break;
+          }
+        },
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -649,79 +864,98 @@ class DestinationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 160,
-      margin: const EdgeInsets.only(right: 16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.black.withOpacity(0.3)
-                : Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Stack(
-          children: [
-            Image.asset(
-              'assets/images/destinations/destination$index.jpg',
-              width: double.infinity,
-              height: double.infinity,
-              fit: BoxFit.cover,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DestinationDetailScreen(
+              name: _getDestinationName(index),
+              location: _getDestinationLocation(index),
+              imageIndex: index,
             ),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withOpacity(0.7),
+          ),
+        );
+      },
+      child: Container(
+        width: 160,
+        margin: const EdgeInsets.only(right: 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white24
+                : Colors.transparent,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.black.withOpacity(0.3)
+                  : Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Stack(
+            children: [
+              Image.asset(
+                'assets/images/destinations/destination$index.jpg',
+                width: double.infinity,
+                height: double.infinity,
+                fit: BoxFit.cover,
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.7),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 12,
+                left: 12,
+                right: 12,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _getDestinationName(index),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.location_on,
+                          color: Colors.white,
+                          size: 12,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _getDestinationLocation(index),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
-            ),
-            Positioned(
-              bottom: 12,
-              left: 12,
-              right: 12,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _getDestinationName(index),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.location_on,
-                        color: Colors.white,
-                        size: 12,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        _getDestinationLocation(index),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
